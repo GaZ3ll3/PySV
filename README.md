@@ -1,0 +1,4 @@
+PySV
+====
+
+simple PySide application
