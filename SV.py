@@ -13,13 +13,19 @@ from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg as Naviga
 from matplotlib.figure import Figure
 
 import operator
+import matplotlib.dates as mdates
+
+from matplotlib.dates import  DateFormatter, WeekdayLocator, HourLocator, \
+     DayLocator, MONDAY
+from matplotlib.finance import quotes_historical_yahoo, candlestick,\
+     plot_day_summary, candlestick2, plot_day_summary2
 
 class StockView(QMainWindow):
     """docstring for StockView"""
     def __init__(self, parent=None):
         QMainWindow.__init__(self, parent)
         self.setWindowTitle('Pandas data processing with matplotlib visualization')
-        self.setGeometry(0, 0, 1600, 900)
+        self.setGeometry(0, 0, 1500, 800)
 
         # set menu
         self.create_StockView_Menu()
@@ -53,7 +59,7 @@ class StockView(QMainWindow):
 
 
     def time_StockView_setup(self):
-        self.start_date = datetime.datetime(2012,6,12)
+        self.start_date = datetime.datetime(2014,5,1)
         self.end_date   = datetime.datetime(2014,6,12)
 
     def data_StockView_import(self):
@@ -68,13 +74,58 @@ class StockView(QMainWindow):
         pass
 
     def on_StockView_Plot(self):
-
         self.top_axes = self.figure.add_subplot(2,1,1)
         # self.top_axes.subplot2grid((4,4), (0,0), rowspan = 3, colspan = 4)
-        self.top_axes.plot(self.data.index, self.data["Close"])
-        self.bottom_axes = self.figure.add_subplot(2,1,2)
+        self.top_axes.plot(
+            self.data.index, self.data["High"],'y',
+            # self.data.index, self.data["Close"],'r',
+            # self.data.index, self.data["Open"],'g',
+            # self.data.index, self.data["Low"],'b'
+            )
+        # self.top_axes.set_ylabel('Price', color='r')
+        self.bottom_axes = self.top_axes.twinx()
+        # self.bottom_axes = self.figure.add_subplot(2,1,1)
         # self.bottom_axes.subplot2grid((4,4), (3,0), rowspan = 1, colspan = 4)
-        self.bottom_axes.bar(self.data.index, self.data["Volume"])
+        self.bottom_axes.bar(self.data.index, self.data["Volume"],
+            alpha=0.05,
+            color='k', label='Volume')
+        self.bottom_axes.get_yaxis().set_visible(False)
+        self.x_axes = self.top_axes.get_xaxis() # get the x-axis
+        
+        self.autoformat = self.x_axes.get_major_formatter() # the the auto-formatter
+
+        self.autoformat.scaled[1./24] = '%H:%M'  # set the < 1d scale to H:M
+        self.autoformat.scaled[1.0] = '%m-%d' # set the > 1d < 1m scale to Y-m-d
+        self.autoformat.scaled[30.] = '%Y-%m' # set the > 1m < 1Y scale to Y-m
+        self.autoformat.scaled[365.] = '%Y' # set the > 1y scale to Y
+
+        self.top_axes.grid(True)
+
+        self.top_axes.get_xaxis().set_visible(False)
+
+
+        self.top_axes.autoscale_view()
+
+
+        self.candle_axes = self.figure.add_subplot(2,1,2)
+
+        self.candle_axes.get_xaxis().set_visible(False)
+
+        candlestick2(self.candle_axes, self.data["Open"],self.data["Close"], 
+            self.data["High"], self.data["Low"], width=0.6, colorup='g', colordown='r')
+
+
+        plot_day_summary2(self.candle_axes, self.data["Open"],self.data["Close"], 
+            self.data["High"], self.data["Low"])
+
+        self.candle_axes.locator_params(tight=True)
+
+        print self.data
+
+
+
+
+
 
         self.canvas.draw()
 
@@ -171,8 +222,8 @@ class StockView(QMainWindow):
         pass
 
     def create_StockView_Canvas(self):
-        self.dpi = 100
-        self.figure = Figure((9.0,6.0), dpi=self.dpi,
+        self.dpi = 85
+        self.figure = Figure((10.0,6.0), dpi=self.dpi,
             facecolor=(1,1,1), edgecolor=(0,0,0))
 
         self.canvas = FigureCanvas(self.figure)
