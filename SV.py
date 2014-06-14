@@ -19,7 +19,7 @@ class StockView(QMainWindow):
     def __init__(self, parent=None):
         QMainWindow.__init__(self, parent)
         self.setWindowTitle('Pandas data processing with matplotlib visualization')
-        self.setGeometry(300, 200, 1200, 900)
+        self.setGeometry(0, 0, 1600, 900)
 
         # set menu
         self.create_StockView_Menu()
@@ -71,15 +71,17 @@ class StockView(QMainWindow):
         pass
 
     def on_StockView_Plot(self):
-        top = plt.subplot2grid((4,4), (0,0), rowspan = 3, colspan = 4)
-        top.plot(self.data.index, self.data["Close"])
 
-        bottom = plt.subplot2grid((4,4), (3,0), rowspan = 1, colspan = 4)
-        bottom.bar(self.data.index, self.data["Volume"])
+        self.top_axes = self.figure.add_subplot(2,1,1)
+        # self.top_axes.subplot2grid((4,4), (0,0), rowspan = 3, colspan = 4)
+        self.top_axes.plot(self.data.index, self.data["Close"])
+        self.bottom_axes = self.figure.add_subplot(2,1,2)
+        # self.bottom_axes.subplot2grid((4,4), (3,0), rowspan = 1, colspan = 4)
+        self.bottom_axes.bar(self.data.index, self.data["Volume"])
 
-        plt.gcf().set_size_inches(15,8)
+        self.canvas.draw()
 
-        plt.show()
+
 
 
     def create_StockView_Action(self, text, slot=None, 
@@ -143,9 +145,8 @@ class StockView(QMainWindow):
 
         self.canvas.setParent(self.main_Frame)
 
-
-
-        self.axes = self.figure.add_subplot(1,1,1)
+        self.time_StockView_setup()
+        self.data_StockView_import()
 
         self.on_StockView_Plot()
 
@@ -169,9 +170,9 @@ class StockView(QMainWindow):
         pass
 
     def create_StockView_Canvas(self):
-        self.dpi = 150
-        self.figure = Figure((4.0,6.0), dpi=self.dpi,
-            facecolor=(0.5,1,0.5), edgecolor=(0,0,0))
+        self.dpi = 100
+        self.figure = Figure((9.0,6.0), dpi=self.dpi,
+            facecolor=(1,1,1), edgecolor=(0,0,0))
 
         self.canvas = FigureCanvas(self.figure)
 
