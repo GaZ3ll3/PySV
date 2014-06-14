@@ -44,9 +44,6 @@ class StockView(QMainWindow):
         pass
 
 
-
-
-
     def load_StockView_Watchlist(self):
         pass
 
@@ -142,16 +139,20 @@ class StockView(QMainWindow):
         self.main_Frame = QWidget()
         # Figure setup
         self.create_StockView_Canvas()
-
+        # set parent
         self.canvas.setParent(self.main_Frame)
 
+        # setup canvas data range
         self.time_StockView_setup()
+        # import data from google or yahoo finance
         self.data_StockView_import()
-
+        # plot data onto screen, need to change into callback
         self.on_StockView_Plot()
 
-        self.create_StockView_TableView(data_list,header)
 
+        # turn data into tableview
+        self.create_StockView_TableView(data_list,header)
+        # need a callback to refresh table
 
         hbox = QHBoxLayout()
         hbox.addWidget(self.table_view)
