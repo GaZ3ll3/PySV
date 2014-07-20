@@ -3,6 +3,7 @@ from PySide.QtCore import *
 from PySide.QtGui import *
 
 from pandas.io.data import DataReader
+import pandas
 import datetime
 import matplotlib
 matplotlib.rcParams['backend.qt4'] = 'PySide'
@@ -13,12 +14,16 @@ from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg as Naviga
 from matplotlib.figure import Figure
 
 import operator
-import matplotlib.dates as mdates
+#import matplotlib.dates as mdates
 
-from matplotlib.dates import  DateFormatter, WeekdayLocator, HourLocator, \
-     DayLocator, MONDAY
+#from matplotlib.dates import  DateFormatter, WeekdayLocator, HourLocator, \
+     #DayLocator, MONDAY
 from matplotlib.finance import quotes_historical_yahoo, candlestick,\
      plot_day_summary, candlestick2, plot_day_summary2
+
+#import pprint,math
+
+import urllib2
 
 class StockView(QMainWindow):
     """docstring for StockView"""
@@ -30,7 +35,7 @@ class StockView(QMainWindow):
         # set menu
         self.create_StockView_Menu()
 
-        # set canvas 
+        # set canvas
         self.create_StockView_MainFrame()
 
         # set status bar
@@ -65,7 +70,12 @@ class StockView(QMainWindow):
     def data_StockView_import(self):
         self.data = DataReader("GOOGL","google",self.start_date,self.end_date)
 
-    # signal 
+        source = urllib2.urlopen(
+            'http://hopey.netfonds.no/posdump.php?date=20140530&paper=AAPL.O&csv_format=txt')
+        data = pandas.read_table(source)
+        print data
+
+    # signal
 
     def on_StockView_HoverOver(self):
         pass
@@ -78,9 +88,9 @@ class StockView(QMainWindow):
         # self.top_axes.subplot2grid((4,4), (0,0), rowspan = 3, colspan = 4)
         self.top_axes.plot(
             self.data.index, self.data["High"],'y',
-            # self.data.index, self.data["Close"],'r',
-            # self.data.index, self.data["Open"],'g',
-            # self.data.index, self.data["Low"],'b'
+            self.data.index, self.data["Close"],'r',
+            self.data.index, self.data["Open"],'g',
+            self.data.index, self.data["Low"],'b'
             )
         # self.top_axes.set_ylabel('Price', color='r')
         self.bottom_axes = self.top_axes.twinx()
@@ -91,7 +101,7 @@ class StockView(QMainWindow):
             color='k', label='Volume')
         self.bottom_axes.get_yaxis().set_visible(False)
         self.x_axes = self.top_axes.get_xaxis() # get the x-axis
-        
+
         self.autoformat = self.x_axes.get_major_formatter() # the the auto-formatter
 
         self.autoformat.scaled[1./24] = '%H:%M'  # set the < 1d scale to H:M
@@ -104,35 +114,27 @@ class StockView(QMainWindow):
         self.top_axes.get_xaxis().set_visible(False)
 
 
-        self.top_axes.autoscale_view()
 
 
         self.candle_axes = self.figure.add_subplot(2,1,2)
 
         self.candle_axes.get_xaxis().set_visible(False)
 
-        candlestick2(self.candle_axes, self.data["Open"],self.data["Close"], 
+        candlestick2(self.candle_axes, self.data["Open"],self.data["Close"],
             self.data["High"], self.data["Low"], width=0.6, colorup='g', colordown='r')
 
 
-        plot_day_summary2(self.candle_axes, self.data["Open"],self.data["Close"], 
+        plot_day_summary2(self.candle_axes, self.data["Open"],self.data["Close"],
             self.data["High"], self.data["Low"])
 
         self.candle_axes.locator_params(tight=True)
-
-        print self.data
-
-
-
-
-
 
         self.canvas.draw()
 
 
 
 
-    def create_StockView_Action(self, text, slot=None, 
+    def create_StockView_Action(self, text, slot=None,
         shortcut=None,icon=None, tip=None,
         checkable=False,signal="triggered()"):
         action = QAction(text, self)
@@ -148,12 +150,12 @@ class StockView(QMainWindow):
         if checkable:
             action.setCheckable(True)
         return action
-        
+
 
     def create_StockView_Menu(self):
         self.file_Menu = self.menuBar().addMenu("&File")
         load_Plot_Action = self.create_StockView_Action("&Save Figure",
-            shortcut="Ctrl+S", slot=self.save_StockView_Plot, 
+            shortcut="Ctrl+S", slot=self.save_StockView_Plot,
             tip="Save the plot")
         load_CSV_Action  = self.create_StockView_Action("&Save CSV",
             shortcut="Ctrl+D",slot=self.save_StockView_Data,
@@ -213,7 +215,7 @@ class StockView(QMainWindow):
 
         self.main_Frame.setLayout(hbox)
 
-        self.setCentralWidget(self.main_Frame) 
+        self.setCentralWidget(self.main_Frame)
 
     def create_StockView_StatusBar(self):
         pass
@@ -343,7 +345,7 @@ data_list = [
 ('TRIFLUOROACETIC ACID', 71.8, -15.3, 1.489),
 ('WATER', 100.0, 0.0, 1.0),
 ('XYLENES', 139.1, -47.8, 0.86)
-]        
+]
 
 def main():
     try:
@@ -357,5 +359,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-        
